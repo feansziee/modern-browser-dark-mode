@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Browser + Dark Mode</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Variabel Warna untuk mempermudah perpindahan mode */
+        :root {
+            --bg-body: #dee1e6;
+            --toolbar: #ffffff;
+            --input-bg: #f1f3f4;
+            --text-main: #202124;
+            --accent: #1a73e8;
+            --border: #bdc1c6;
+            --bookmark-hover: #e8eaed;
+        }
+
+        /* Warna untuk Dark Mode */
+        [data-theme="dark"] {
+            --bg-body: #202124;
+            --toolbar: #292a2d;
+            --input-bg: #35363a;
+            --text-main: #e8eaed;
+            --accent: #8ab4f8;
+            --border: #3c4043;
+            --bookmark-hover: #3c4043;
+        }
+
+        * { box-sizing: border-box; transition: background 0.3s, color 0.3s; }
+        
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            height: 100vh; 
+            background-color: var(--bg-body); 
+            color: var(--text-main);
+        }
+
+        .browser-header {
+            background: var(--toolbar);
+            padding: 8px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .top-row { display: flex; align-items: center; gap: 12px; }
+
+        /* Address Bar */
+        .address-bar-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            background: var(--input-bg);
+            border-radius: 20px;
+            padding: 4px 15px;
+        }
+
+        input#urlInput {
+            width: 100%;
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 14px;
+            height: 28px;
+            color: var(--text-main);
+        }
+
+        /* Buttons & Bookmarks */
+        .btn-icon {
+            background: none;
+            border: none;
+            padding: 6px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            color: var(--text-main);
+            opacity: 0.8;
+        }
+
+        .btn-icon:hover { background-color: var(--bookmark-hover); opacity: 1; }
+
+        .bookmark-bar { display: flex; gap: 10px; padding: 2px 5px; font-size: 13px; }
+
+        .bookmark-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            color: var(--text-main);
+        }
+
+        .bookmark-item:hover { background-color: var(--bookmark-hover); }
+
+        /* Area Iframe */
+        .viewport { flex-grow: 1; background: white; display: flex; }
+        iframe { width: 100%; height: 100%; border: none; }
+        
+        .status-bar {
+            font-size: 11px;
+            padding: 4px 15px;
+            background: var(--toolbar);
+            color: var(--text-main);
+            border-top: 1px solid var(--border);
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="browser-header">
+        <div class="top-row">
+            <div style="display: flex; gap: 5px;">
+                <button class="btn-icon" onclick="reloadPage()"><i data-lucide="rotate-cw"></i></button>
+            </div>
+
+            <div class="address-bar-container">
+                <i data-lucide="lock" style="width: 14px; margin-right: 8px; opacity: 0.5;"></i>
+                <input type="text" id="urlInput" placeholder="Ketik URL..." value="https://www.wikipedia.org">
+            </div>
+
+            <button class="btn-icon" onclick="toggleDarkMode()" title="Ganti Mode">
+                <i data-lucide="moon" id="themeIcon"></i>
+            </button>
+            
+            <button class="btn-icon" onclick="loadPage()" style="color: var(--accent);">
+                <i data-lucide="circle-play"></i>
+            </button>
+        </div>
+
+        <div class="bookmark-bar">
+            <div class="bookmark-item" onclick="quickLoad('https://www.wikipedia.org')"><i data-lucide="book" style="width: 14px;"></i> Wiki</div>
+            <div class="bookmark-item" onclick="quickLoad('https://www.bing.com')"><i data-lucide="search" style="width: 14px;"></i> Bing</div>
+            <div class="bookmark-item" onclick="quickLoad('https://help.github.com')"><i data-lucide="github" style="width: 14px;"></i> GitHub</div>
+        </div>
+    </div>
+
+    <div class="viewport">
+        <iframe id="browserFrame" src="https://www.wikipedia.org"></iframe>
+    </div>
+
+    <div class="status-bar" id="statusBar">Selesai</div>
+
+    <script>
+        lucide.createIcons();
+        const frame = document.getElementById('browserFrame');
+        const input = document.getElementById('urlInput');
+        const status = document.getElementById('statusBar');
+        const themeIcon = document.getElementById('themeIcon');
+
+        function loadPage() {
+            let url = input.value.trim();
+            if (url) {
+                if (!url.startsWith('http')) url = 'https://' + url;
+                frame.src = url;
+                input.value = url;
+            }
+        }
+
+        function quickLoad(targetUrl) {
+            input.value = targetUrl;
+            loadPage();
+        }
+
+        function reloadPage() {
+            const current = frame.src;
+            frame.src = ''; 
+            frame.src = current;
+        }
+
+        // Fungsi Toggle Dark Mode
+        function toggleDarkMode() {
+            const body = document.body;
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.removeAttribute('data-theme');
+                themeIcon.setAttribute('data-lucide', 'moon');
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                themeIcon.setAttribute('data-lucide', 'sun');
+            }
+            lucide.createIcons(); // Re-render icon
+        }
+
+        input.addEventListener("keypress", (e) => { if (e.key === "Enter") loadPage(); });
+        frame.onload = () => { status.innerText = "Halaman Berhasil Dimuat"; };
+    </script>
+</body>
+</html>
